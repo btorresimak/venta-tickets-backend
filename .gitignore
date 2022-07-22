@@ -1,3 +1,10 @@
+# environments
+.env.production
+.env.development
+
+# certs
+*.pem
+
 # compiled output
 /dist
 /node_modules
