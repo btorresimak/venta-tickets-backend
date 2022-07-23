@@ -2,6 +2,7 @@ import { Schema } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 
 export interface IUser extends Document {
+  identityCard: string;
   name: string;
   password: string;
   email: string;
@@ -13,11 +14,12 @@ export interface IUser extends Document {
 
 export const userSchema = new Schema<IUser>(
   {
+    identityCard: { type: String, required: true },
     name: { type: String, required: true },
-    password: { type: String, required: true },
     email: { type: String, required: true },
     phone: { type: String, required: true },
-    profile: { type: Schema.Types.ObjectId, ref: 'profiles', required: true },
+    profile: { type: String, uppercase: true, required: true }, // Admin - Client - Seller - Guest
+    password: { type: String },
     isActive: { type: Boolean, default: true },
   },
   {
@@ -27,9 +29,11 @@ export const userSchema = new Schema<IUser>(
 
 userSchema.pre('save', function (next) {
   if (!this.isModified('password')) return next();
-  const salt = bcrypt.genSaltSync(10);
-  const hash = bcrypt.hashSync(this.password, salt);
-  this.password = hash;
+  if (this.password !== undefined) {
+    const salt = bcrypt.genSaltSync(10);
+    const hash = bcrypt.hashSync(this.password, salt);
+    this.password = hash;
+  }
   next();
 });
 
