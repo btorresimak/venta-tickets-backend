@@ -21,6 +21,10 @@ export class TicketsService {
     return this.ticketModel.create(ticket);
   }
 
+  getTicket(ticketId: string) {
+    return this.ticketModel.findOne({ _id: ticketId });
+  }
+
   disableTicket(ticketId: string) {
     return this.ticketModel.findOneAndUpdate(
       { _id: ticketId, isActive: true },

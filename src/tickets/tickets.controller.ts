@@ -86,9 +86,12 @@ export class TicketsController {
   @Put('register/:id')
   async registerTicket(@Res() res: Response, @Param('id') ticketId: string) {
     try {
+      const existTicket = await this.ticketsService.getTicket(ticketId);
+      if (!existTicket) throw new NotFoundException('Ticket no existente');
       const ticket = await this.ticketsService.disableTicket(ticketId);
-      if (!ticket)
-        throw new NotFoundException('Ticket no encontrado o ya registrado');
+      if (!ticket) {
+        return res.json({ message: 'Ticket ya registrado', ticket });
+      }
       return res.json({ message: 'Ticket registrado', ticket });
     } catch (error) {
       console.log(error);
