@@ -7,7 +7,7 @@ import { SERVER_PORT } from './config/constants';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.setGlobalPrefix('api');
+  // app.setGlobalPrefix('api');
   app.enableCors();
   const logger = new Logger('Bootstrap');
   const config = app.get(ConfigService);

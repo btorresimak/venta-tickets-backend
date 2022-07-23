@@ -12,4 +12,6 @@ export class createTicketDTO {
   assistantEmail: string;
   hasAssistant: boolean;
   location: string;
+  isVerified: boolean;
+  verifiedBy: string;
 }

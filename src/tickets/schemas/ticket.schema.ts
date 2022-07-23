@@ -10,6 +10,8 @@ export const ticketSchema = new Schema(
     collectionType: { type: String, uppercase: true, required: true }, // Reseller - Point of Sale - Web
     issuedDate: { type: Date, required: true, default: Date.now },
     assistantId: { type: Schema.Types.ObjectId, ref: 'users' },
+    isVerified: { type: Boolean, default: false },
+    verifiedBy: { type: Schema.Types.ObjectId, ref: 'users' },
   },
   {
     timestamps: true,
