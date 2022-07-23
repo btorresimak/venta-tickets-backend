@@ -1,4 +1,12 @@
-import { Body, Controller, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  NotFoundException,
+  Param,
+  Post,
+  Put,
+  Res,
+} from '@nestjs/common';
 import { Response } from 'express';
 import { createTicketDTO } from './dto/createTicket.dto';
 import { TicketsService } from './tickets.service';
@@ -68,6 +76,20 @@ export class TicketsController {
       const q = qr.image(ticket._id, { type: 'png' });
       //   const qrImage = qr.imageSync(ticket._id, { type: 'png' });
       return res.send(q);
+    } catch (error) {
+      console.log(error);
+      const errorData = getError(error);
+      return res.status(errorData.statusCode).json(errorData);
+    }
+  }
+
+  @Put('register/:id')
+  async registerTicket(@Res() res: Response, @Param('id') ticketId: string) {
+    try {
+      const ticket = await this.ticketsService.disableTicket(ticketId);
+      if (!ticket)
+        throw new NotFoundException('Ticket no encontrado o ya registrado');
+      return res.json({ message: 'Ticket registrado', ticket });
     } catch (error) {
       console.log(error);
       const errorData = getError(error);

@@ -20,4 +20,12 @@ export class TicketsService {
   createTicket(ticket: any) {
     return this.ticketModel.create(ticket);
   }
+
+  disableTicket(ticketId: string) {
+    return this.ticketModel.findOneAndUpdate(
+      { _id: ticketId, isActive: true },
+      { isActive: false },
+      { new: true },
+    );
+  }
 }
