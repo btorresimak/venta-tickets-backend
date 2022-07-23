@@ -14,6 +14,8 @@ export class Ticket {
   @ApiProperty()
   paymentMethod: string;
   @ApiProperty()
+  paymentDetails: any;
+  @ApiProperty()
   collectionType: string;
   @ApiProperty()
   issuedDate: Date;

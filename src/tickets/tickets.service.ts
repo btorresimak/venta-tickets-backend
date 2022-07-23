@@ -13,6 +13,14 @@ export class TicketsService {
     return this.ticketModel.find({ isActive: true });
   }
 
+  getTicketsByLocation(location: string) {
+    return this.ticketModel.find({
+      location,
+      isActive: true,
+      collectionType: 'RESELLER',
+    });
+  }
+
   countTickets() {
     return this.ticketModel.count();
   }
@@ -22,13 +30,23 @@ export class TicketsService {
   }
 
   getTicket(ticketId: string) {
-    return this.ticketModel.findOne({ _id: ticketId });
+    return this.ticketModel
+      .findOne({ _id: ticketId })
+      .populate(['clientId', 'assistantId']);
   }
 
   disableTicket(ticketId: string) {
     return this.ticketModel.findOneAndUpdate(
       { _id: ticketId, isActive: true },
       { isActive: false },
+      { new: true },
+    );
+  }
+
+  updateAssistant(ticketId: string, assistantId: string) {
+    return this.ticketModel.findOneAndUpdate(
+      { _id: ticketId, isActive: true },
+      { assistantId },
       { new: true },
     );
   }

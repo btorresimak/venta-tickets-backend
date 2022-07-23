@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   NotFoundException,
   Param,
   Post,
@@ -13,7 +14,9 @@ import { TicketsService } from './tickets.service';
 import { UsersService } from '../users/users.service';
 import { getError } from '../common/helpers/error.helper';
 import qr from 'qr-image';
-
+import { ApiTags } from '@nestjs/swagger';
+import { assignAssistantDTO } from './dto';
+@ApiTags('Tickets')
 @Controller('tickets')
 export class TicketsController {
   constructor(
@@ -68,6 +71,7 @@ export class TicketsController {
         location: data.location,
         clientId: user._id,
         paymentMethod: data.paymentMethod,
+        paymentDetails: data.paymentDetails,
         collectionType: data.collectionType,
         assistantId: assistant._id,
         isVerified: data.isVerified,
@@ -81,6 +85,35 @@ export class TicketsController {
       return res.status(errorData.statusCode).json(errorData);
     }
   }
+
+  @Get(':id')
+  async getTicket(@Res() res: Response, @Param('id') ticketId: string) {
+    try {
+      const ticket = await this.ticketsService.getTicket(ticketId);
+      if (!ticket) throw new NotFoundException('Ticket no existente');
+      return res.json(ticket);
+    } catch (error) {
+      console.log(error);
+      const errorData = getError(error);
+      return res.status(errorData.statusCode).json(errorData);
+    }
+  }
+
+  @Get('location/:location')
+  async getTicketsByLocation(
+    @Res() res: Response,
+    @Param('location') location: string,
+  ) {
+    try {
+      const tickets = await this.ticketsService.getTicketsByLocation(location);
+      return res.json(tickets);
+    } catch (error) {
+      console.log(error);
+      const errorData = getError(error);
+      return res.status(errorData.statusCode).json(errorData);
+    }
+  }
+
   @Post('new')
   async createTicket2500(@Res() res: Response, @Body() data: createTicketDTO) {
     try {
@@ -146,7 +179,7 @@ export class TicketsController {
     } catch (error) {
       console.log(error);
       const errorData = getError(error);
-      // return res.status(errorData.statusCode).json(errorData);
+      return res.status(errorData.statusCode).json(errorData);
     }
   }
 
@@ -162,6 +195,47 @@ export class TicketsController {
           ticket: existTicket,
         });
       }
+      return res.json({ message: 'Ticket registrado', ticket });
+    } catch (error) {
+      console.log(error);
+      const errorData = getError(error);
+      return res.status(errorData.statusCode).json(errorData);
+    }
+  }
+
+  @Put('assistant/:id')
+  async assignAssistant(
+    @Res() res: Response,
+    @Param('id') ticketId: string,
+    @Body() data: assignAssistantDTO,
+  ) {
+    try {
+      const existTicket = await this.ticketsService.getTicket(ticketId);
+      if (!existTicket) throw new NotFoundException('Ticket no existente');
+      if (!existTicket.isActive) {
+        return res.json({
+          message: 'El ticket ya ha sido usado',
+        });
+      }
+      let existsAssistant = await this.usersService.getUser({
+        identityCard: data.assistantIdentityCard,
+      });
+
+      if (!existsAssistant) {
+        existsAssistant = await this.usersService.createUser({
+          identityCard: data.assistantIdentityCard,
+          name: data.assistantName,
+          email: data.assistantEmail,
+          phone: data.assistantPhone,
+          profile: 'GUEST',
+        });
+      }
+
+      const ticket = await this.ticketsService.updateAssistant(
+        ticketId,
+        existsAssistant._id,
+      );
+
       return res.json({ message: 'Ticket registrado', ticket });
     } catch (error) {
       console.log(error);
