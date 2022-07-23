@@ -191,7 +191,7 @@ export class TicketsController {
       const ticket = await this.ticketsService.disableTicket(ticketId);
       if (!ticket) {
         return res.json({
-          message: 'Ticket ya registrado',
+          message: 'Ticket ya ha sido registrado registrado anteriormente',
           ticket: existTicket,
         });
       }
