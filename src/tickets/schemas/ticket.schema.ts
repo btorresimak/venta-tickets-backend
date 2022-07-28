@@ -3,7 +3,7 @@ import { Schema } from 'mongoose';
 export const ticketSchema = new Schema(
   {
     number: { type: Number, required: true },
-    location: { type: String, required: true }, // General - Arena - VIP
+    location: { type: String, required: true, ref: 'locations' }, // General - Arena - VIP
     isActive: { type: Boolean, default: true },
     clientId: { type: Schema.Types.ObjectId, ref: 'users' },
     paymentMethod: { type: String, uppercase: true, required: true }, // Cash - Credit Card - Debit Card - Paypal - Payphone

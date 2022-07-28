@@ -16,12 +16,14 @@ import { getError } from '../common/helpers/error.helper';
 import qr from 'qr-image';
 import { ApiTags } from '@nestjs/swagger';
 import { assignAssistantDTO } from './dto';
+import { LocationsService } from '../locations/locations.service';
 @ApiTags('Tickets')
 @Controller('tickets')
 export class TicketsController {
   constructor(
     private ticketsService: TicketsService,
     private usersService: UsersService,
+    private locationsService: LocationsService,
   ) {}
 
   @Post()
@@ -66,9 +68,17 @@ export class TicketsController {
       }
       const ticketNumber = await this.ticketsService.countTickets();
 
+      const location = await this.locationsService.getLocation({
+        name: data.location,
+      });
+      console.log(
+        '🚀 ~ file: tickets.controller.ts ~ line 74 ~ TicketsController ~ createTicket ~ location',
+        location,
+      );
+
       const ticketData = {
         number: ticketNumber + 1,
-        location: data.location,
+        location: location._id,
         clientId: user._id,
         paymentMethod: data.paymentMethod,
         paymentDetails: data.paymentDetails,
@@ -78,6 +88,14 @@ export class TicketsController {
       };
 
       const ticket = await this.ticketsService.createTicket(ticketData);
+      const updatedLocation = await this.locationsService.updateAvailable(
+        location._id,
+        location.available,
+      );
+      console.log(
+        '🚀 ~ file: tickets.controller.ts ~ line 91 ~ TicketsController ~ createTicket ~ updatedLocation',
+        updatedLocation,
+      );
       return res.json({ message: 'Ticket creado', ticket });
     } catch (error) {
       console.log(error);

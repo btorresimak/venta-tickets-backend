@@ -49,18 +49,33 @@ export class LocationsController {
       const locations = [
         {
           name: 'General',
-          total: 6000,
-          available: 6000,
+          total: 5600,
+          available: 5600,
         },
         {
           name: 'Golden',
-          total: 1000,
-          available: 1000,
+          total: 930,
+          available: 930,
         },
         {
           name: 'V.I.P',
-          total: 1000,
-          available: 1000,
+          total: 930,
+          available: 930,
+        },
+        {
+          name: 'Cortesía General',
+          total: 400,
+          available: 400,
+        },
+        {
+          name: 'Cortesía V.I.P',
+          total: 70,
+          available: 70,
+        },
+        {
+          name: 'Cortesía Golden',
+          total: 70,
+          available: 70,
         },
       ];
 
