@@ -15,7 +15,12 @@ export class UsersService {
     return await this.userModel.create(user);
   }
 
-  async getUser(user: { _id?: string; identityCard?: string; email?: string }) {
+  async getUser(user: {
+    _id?: string;
+    identityCard?: string;
+    email?: string;
+    uid?: string;
+  }) {
     user['isActive'] = true;
     return await this.userModel.findOne(user).populate('profile');
   }

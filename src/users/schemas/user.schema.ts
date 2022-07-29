@@ -2,9 +2,11 @@ import { Schema } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 
 export interface IUser extends Document {
+  uid: string;
   identityCard: string;
   name: string;
   password: string;
+  address: string;
   email: string;
   phone: string;
   profile: any;
@@ -14,11 +16,13 @@ export interface IUser extends Document {
 
 export const userSchema = new Schema<IUser>(
   {
+    uid: { type: String, unique: true },
     identityCard: { type: String, required: true },
     name: { type: String, required: true },
+    address: { type: String },
     email: { type: String, required: true },
     phone: { type: String, required: true },
-    profile: { type: String, uppercase: true, required: true }, // Admin - Client - Seller - Guest
+    profile: { type: String, uppercase: true, required: true },
     password: { type: String },
     isActive: { type: Boolean, default: true },
   },

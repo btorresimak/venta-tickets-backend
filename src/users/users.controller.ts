@@ -41,6 +41,19 @@ export class UsersController {
       return res.status(errorData.statusCode).json(errorData);
     }
   }
+
+  @Get('firebase/:uid')
+  async getUserByUid(@Res() res: Response, @Param('uid') uid: string) {
+    try {
+      const user = await this.usersService.getUser({ uid });
+      return res.json({ user });
+    } catch (error) {
+      console.log(error);
+      const errorData = getError(error);
+      return res.status(errorData.statusCode).json(errorData);
+    }
+  }
+
   @Post()
   async createUser(@Body() data: any, @Res() res: Response) {
     try {
