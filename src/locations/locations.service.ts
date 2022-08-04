@@ -22,11 +22,10 @@ export class LocationsService {
     return this.locationModel.create(location);
   }
 
-  updateAvailable(id: string, available: number) {
-    return this.locationModel.findOneAndUpdate(
-      { _id: id, isActive: true },
-      { available: available - 1 },
-      { new: true },
-    );
+  async updateAvailable(id: string) {
+    const location = await this.locationModel.findById(id);
+    location.available = location.available - 1;
+    await location.save();
+    return location;
   }
 }
