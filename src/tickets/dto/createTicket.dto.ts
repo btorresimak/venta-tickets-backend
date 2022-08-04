@@ -1,5 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+export class AssistantDTO {
+  @ApiProperty()
+  identityCard: string;
+  @ApiProperty()
+  name: string;
+  @ApiProperty()
+  phone: string;
+  @ApiProperty()
+  email: string;
+}
+
 export class createTicketDTO {
   @ApiProperty()
   clientIdentityCard: string;
@@ -17,16 +28,8 @@ export class createTicketDTO {
   invoiceDetails: any;
   @ApiProperty()
   collectionType: string;
-  @ApiProperty()
-  assistantIdentityCard: string;
-  @ApiProperty()
-  assistantName: string;
-  @ApiProperty()
-  assistantPhone: string;
-  @ApiProperty()
-  assistantEmail: string;
-  @ApiProperty()
-  hasAssistant: boolean;
+  @ApiProperty({ type: [AssistantDTO] })
+  assistants: AssistantDTO[];
   @ApiProperty()
   location: string;
   @ApiProperty()

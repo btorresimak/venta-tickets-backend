@@ -33,8 +33,6 @@ export class TicketsController {
         identityCard: data.clientIdentityCard,
       });
 
-      let assistant;
-
       if (!user) {
         user = await this.usersService.createUser({
           identityCard: data.clientIdentityCard,
@@ -49,54 +47,52 @@ export class TicketsController {
         user = await this.usersService.updateUserProfile(user._id, 'CLIENT');
       }
 
-      if (!data.hasAssistant) {
-        assistant = user;
-      } else {
-        assistant = await this.usersService.getUser({
-          identityCard: data.assistantIdentityCard,
+      let createdTickets = 0;
+      // eslint-disable-next-line prefer-const
+      let ticketsGenerados = [];
+      for (let i = 0; i < data.assistants.length; i++) {
+        const element = data.assistants[i];
+        let assistant = await this.usersService.getUser({
+          identityCard: element.identityCard,
         });
 
         if (!assistant) {
           assistant = await this.usersService.createUser({
-            identityCard: data.assistantIdentityCard,
-            name: data.assistantName,
-            email: data.assistantEmail,
-            phone: data.assistantPhone,
+            identityCard: element.identityCard,
+            name: element.name,
+            email: element.email,
+            phone: element.phone,
             profile: 'GUEST',
           });
         }
+        const ticketNumber = await this.ticketsService.countTickets();
+
+        const location = await this.locationsService.getLocation({
+          name: data.location,
+        });
+
+        const ticketData = {
+          number: ticketNumber + 1,
+          location: location._id,
+          clientId: user._id,
+          paymentMethod: data.paymentMethod,
+          paymentDetails: data.paymentDetails,
+          invoiceDetails: data.invoiceDetails,
+          collectionType: data.collectionType,
+          assistantId: assistant._id,
+          isVerified: data.isVerified,
+        };
+
+        const ticket = await this.ticketsService.createTicket(ticketData);
+        ticketsGenerados.push(ticket);
+        createdTickets++;
+        if (createdTickets === data.assistants.length) {
+          return res.json({
+            message: 'Tickets generados',
+            tickets: ticketsGenerados,
+          });
+        }
       }
-      const ticketNumber = await this.ticketsService.countTickets();
-
-      const location = await this.locationsService.getLocation({
-        name: data.location,
-      });
-      console.log(
-        '🚀 ~ file: tickets.controller.ts ~ line 74 ~ TicketsController ~ createTicket ~ location',
-        location,
-      );
-
-      const ticketData = {
-        number: ticketNumber + 1,
-        location: location._id,
-        clientId: user._id,
-        paymentMethod: data.paymentMethod,
-        paymentDetails: data.paymentDetails,
-        collectionType: data.collectionType,
-        assistantId: assistant._id,
-        isVerified: data.isVerified,
-      };
-
-      const ticket = await this.ticketsService.createTicket(ticketData);
-      const updatedLocation = await this.locationsService.updateAvailable(
-        location._id,
-        location.available,
-      );
-      console.log(
-        '🚀 ~ file: tickets.controller.ts ~ line 91 ~ TicketsController ~ createTicket ~ updatedLocation',
-        updatedLocation,
-      );
-      return res.json({ message: 'Ticket creado', ticket });
     } catch (error) {
       console.log(error);
       const errorData = getError(error);
@@ -132,74 +128,74 @@ export class TicketsController {
     }
   }
 
-  @Post('new')
-  async createTicket2500(@Res() res: Response, @Body() data: createTicketDTO) {
-    try {
-      let i = 0;
-      for (i = 0; i < 2500; i++) {
-        let user = await this.usersService.getUser({
-          identityCard: data.clientIdentityCard,
-        });
+  // @Post('new')
+  // async createTicket2500(@Res() res: Response, @Body() data: createTicketDTO) {
+  //   try {
+  //     let i = 0;
+  //     for (i = 0; i < 2500; i++) {
+  //       let user = await this.usersService.getUser({
+  //         identityCard: data.clientIdentityCard,
+  //       });
 
-        let assistant;
+  //       let assistant;
 
-        if (!user) {
-          user = await this.usersService.createUser({
-            identityCard: data.clientIdentityCard,
-            name: data.clientName,
-            email: data.clientEmail,
-            phone: data.clientPhone,
-            profile: 'GUEST',
-          });
-        }
+  //       if (!user) {
+  //         user = await this.usersService.createUser({
+  //           identityCard: data.clientIdentityCard,
+  //           name: data.clientName,
+  //           email: data.clientEmail,
+  //           phone: data.clientPhone,
+  //           profile: 'GUEST',
+  //         });
+  //       }
 
-        if (
-          data.collectionType === 'WEB' &&
-          !!user &&
-          user.profile === 'GUEST'
-        ) {
-          user = await this.usersService.updateUserProfile(user._id, 'CLIENT');
-        }
+  //       if (
+  //         data.collectionType === 'WEB' &&
+  //         !!user &&
+  //         user.profile === 'GUEST'
+  //       ) {
+  //         user = await this.usersService.updateUserProfile(user._id, 'CLIENT');
+  //       }
 
-        if (!data.hasAssistant) {
-          assistant = user;
-        } else {
-          assistant = await this.usersService.getUser({
-            identityCard: data.assistantIdentityCard,
-          });
+  //       if (!data.hasAssistant) {
+  //         assistant = user;
+  //       } else {
+  //         assistant = await this.usersService.getUser({
+  //           identityCard: data.assistantIdentityCard,
+  //         });
 
-          if (!assistant) {
-            assistant = await this.usersService.createUser({
-              identityCard: data.assistantIdentityCard,
-              name: data.assistantName,
-              email: data.assistantEmail,
-              phone: data.assistantPhone,
-              profile: 'GUEST',
-            });
-          }
-        }
-        const ticketNumber = await this.ticketsService.countTickets();
+  //         if (!assistant) {
+  //           assistant = await this.usersService.createUser({
+  //             identityCard: data.assistantIdentityCard,
+  //             name: data.assistantName,
+  //             email: data.assistantEmail,
+  //             phone: data.assistantPhone,
+  //             profile: 'GUEST',
+  //           });
+  //         }
+  //       }
+  //       const ticketNumber = await this.ticketsService.countTickets();
 
-        const ticketData = {
-          number: ticketNumber + 1,
-          location: data.location,
-          clientId: user._id,
-          paymentMethod: data.paymentMethod,
-          collectionType: data.collectionType,
-          assistantId: assistant._id,
-          isVerified: data.isVerified,
-        };
+  //       const ticketData = {
+  //         number: ticketNumber + 1,
+  //         location: data.location,
+  //         clientId: user._id,
+  //         paymentMethod: data.paymentMethod,
+  //         collectionType: data.collectionType,
+  //         assistantId: assistant._id,
+  //         isVerified: data.isVerified,
+  //       };
 
-        const ticket = await this.ticketsService.createTicket(ticketData);
-        if (ticket) console.log('ticket creado', i);
-        // if (i === 2499) return res.json({ message: 'Tickets creados', i });
-      }
-    } catch (error) {
-      console.log(error);
-      const errorData = getError(error);
-      return res.status(errorData.statusCode).json(errorData);
-    }
-  }
+  //       const ticket = await this.ticketsService.createTicket(ticketData);
+  //       if (ticket) console.log('ticket creado', i);
+  //       // if (i === 2499) return res.json({ message: 'Tickets creados', i });
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //     const errorData = getError(error);
+  //     return res.status(errorData.statusCode).json(errorData);
+  //   }
+  // }
 
   @Put('register/:id')
   async registerTicket(@Res() res: Response, @Param('id') ticketId: string) {
