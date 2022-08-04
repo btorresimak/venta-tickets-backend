@@ -17,9 +17,14 @@ import qr from 'qr-image';
 import { ApiTags } from '@nestjs/swagger';
 import { assignAssistantDTO } from './dto';
 import { LocationsService } from '../locations/locations.service';
+import moment from 'moment';
+import { entradas } from './interfaces/data.interface';
+import axios from 'axios';
 @ApiTags('Tickets')
 @Controller('tickets')
 export class TicketsController {
+  apiKey = 'doga6aXrhN93Hbkv6XDy';
+
   constructor(
     private ticketsService: TicketsService,
     private usersService: UsersService,
@@ -29,6 +34,11 @@ export class TicketsController {
   @Post()
   async createTicket(@Res() res: Response, @Body() data: createTicketDTO) {
     try {
+      const claveAcceso = await this.generateInvoice(
+        data.paymentDetails,
+        data.location,
+        data.assistants.length,
+      );
       let user = await this.usersService.getUser({
         identityCard: data.clientIdentityCard,
       });
@@ -77,11 +87,11 @@ export class TicketsController {
           clientId: user._id,
           paymentMethod: data.paymentMethod,
           paymentDetails: data.paymentDetails,
-          invoiceDetails: data.invoiceDetails,
+          invoiceDetails: claveAcceso,
           collectionType: data.collectionType,
           assistantId: assistant._id,
           isVerified: data.isVerified,
-          verifverifiedBy: null,
+          verifverifiedBy: data.verifiedBy || null,
         };
 
         const ticket = await this.ticketsService.createTicket(ticketData);
@@ -247,5 +257,151 @@ export class TicketsController {
       const errorData = getError(error);
       return res.status(errorData.statusCode).json(errorData);
     }
+  }
+
+  async generateInvoice(
+    paymentData: any,
+    locationType: string,
+    quantity: number,
+  ): Promise<string> {
+    try {
+      const fechaEmision = this.formatDate(new Date());
+      const total = paymentData.amount / 100;
+      const tipoIdentificacion =
+        paymentData.document.length === 10 ? '05' : '04';
+      const formaPago = paymentData.cardType === 'Debit' ? '16' : '19';
+      const tipoEntrada = entradas.find(
+        (entrada) => entrada.nombre === locationType,
+      );
+
+      const valor = (tipoEntrada.baseImponible * quantity * 12) / 100;
+      const secuencial = await this.obtenerSecuencialFactura(
+        '1804485744001',
+        '01',
+      );
+
+      const data = {
+        campoAdicional: [
+          {
+            nombre: 'emailCliente',
+            value: paymentData.email,
+          },
+        ],
+        codDoc: '01',
+        detalles: [
+          {
+            cantidad: quantity,
+            codigoPrincipal: tipoEntrada.codigoPrincipal,
+            descripcion: locationType,
+            descuento: 0,
+            detAdicional: [],
+            impuesto: [
+              {
+                baseImponible: tipoEntrada.baseImponible * quantity,
+                codigo: '2',
+                codigoPorcentaje: '2',
+                tarifa: 12,
+                valor,
+              },
+            ],
+            precioUnitario: tipoEntrada.baseImponible,
+          },
+        ],
+        estab: '001',
+        fechaEmision: fechaEmision.toString(),
+        moneda: 'DOLAR',
+        pagos: [
+          {
+            formaPago: formaPago,
+            plazo: '0',
+            total: total,
+            unidadTiempo: 'Días',
+          },
+        ],
+        ptoEmi: '002',
+        receptor: {
+          direccion: 'Ambato', //Dato quemado
+          identificacion: paymentData.document,
+          periodoFiscal: '',
+          propina: 0,
+          razonSocial: paymentData.optionalParameter4,
+          tipoIdentificacion: tipoIdentificacion,
+        },
+        ruc: '1804485744001',
+        secuencial,
+        version: '1.0.0',
+      };
+
+      const claveAcceso = await this.facturar(data);
+      await this.enviarAutorizarComprobante(claveAcceso);
+      await this.enviarEmailFacturaElectronica(claveAcceso);
+      return claveAcceso;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async obtenerSecuencialFactura(ruc: string, codDoc: string) {
+    const { data: resp } = await axios.get(
+      `https://api-sbox.veronica.ec/api/v1.0/empresas/${ruc}/secuenciales?codDoc=${codDoc}`,
+      {
+        headers: {
+          'X-API-KEY': `${this.apiKey}`,
+        },
+      },
+    );
+
+    return resp.result[0].establecimiento.puntosEmision[0].secuencialFactura;
+  }
+
+  async facturar(datosFactura: any) {
+    const { data } = await axios.post(
+      'https://api-sbox.veronica.ec/api/v2.0/comprobantes/facturas',
+      datosFactura,
+      {
+        headers: {
+          'X-API-KEY': `${this.apiKey}`,
+        },
+      },
+    );
+
+    return data.result.claveAcceso;
+  }
+
+  async enviarAutorizarComprobante(claveAcceso: any) {
+    console.log(claveAcceso);
+    const { data } = await axios.patch(
+      `https://api-sbox.veronica.ec/api/v1.0/comprobantes/${claveAcceso}/emitir`,
+      {},
+      {
+        headers: {
+          'X-API-KEY': `${this.apiKey}`,
+        },
+      },
+    );
+  }
+
+  async enviarEmailFacturaElectronica(claveAcceso: any) {
+    const {} = await axios.post(
+      `https://api-sbox.veronica.ec/api/v1.0/comprobantes/${claveAcceso}/notificar?logo=true`,
+      {},
+      {
+        headers: {
+          'X-API-KEY': `${this.apiKey}`,
+        },
+      },
+    );
+  }
+
+  padTo2Digits(num) {
+    return num.toString().padStart(2, '0');
+  }
+
+  formatDate(date) {
+    return [
+      this.padTo2Digits(date.getDate()),
+      this.padTo2Digits(date.getMonth() + 1),
+      date.getFullYear(),
+    ].join('/');
   }
 }
