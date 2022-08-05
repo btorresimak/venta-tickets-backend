@@ -52,8 +52,10 @@ export class TicketsService {
   }
 
   existsTickets(clientTransactionId: string) {
-    return this.ticketModel.find({
-      'paymentDetails.clientTransactionId': clientTransactionId,
-    });
+    return this.ticketModel
+      .find({
+        'paymentDetails.clientTransactionId': clientTransactionId,
+      })
+      .populate(['assistantId', 'location']);
   }
 }
