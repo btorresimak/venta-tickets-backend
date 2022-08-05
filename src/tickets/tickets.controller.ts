@@ -1,5 +1,4 @@
 import {
-  BadGatewayException,
   BadRequestException,
   Body,
   Controller,
@@ -37,11 +36,11 @@ export class TicketsController {
   async createTicket(@Res() res: Response, @Body() data: createTicketDTO) {
     try {
       let claveAcceso = null;
+      const existsTicket = await this.ticketsService.existsTickets(
+        data.paymentDetails.clientTransactionId,
+      );
+      if (existsTicket) throw new BadRequestException('El ticket ya existe');
       if (data.paymentMethod == 'PAYPHONE') {
-        const existsTicket = await this.ticketsService.existsTickets(
-          data.paymentDetails.clientTransactionId,
-        );
-        if (existsTicket) throw new BadRequestException('El ticket ya existe');
         claveAcceso = await this.generateInvoice(
           data.paymentDetails,
           data.location,
