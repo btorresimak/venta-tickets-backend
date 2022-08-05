@@ -14,11 +14,9 @@ import { createTicketDTO } from './dto/createTicket.dto';
 import { TicketsService } from './tickets.service';
 import { UsersService } from '../users/users.service';
 import { getError } from '../common/helpers/error.helper';
-import qr from 'qr-image';
 import { ApiTags } from '@nestjs/swagger';
 import { assignAssistantDTO } from './dto';
 import { LocationsService } from '../locations/locations.service';
-import moment from 'moment';
 import { entradas } from './interfaces/data.interface';
 import axios from 'axios';
 @ApiTags('Tickets')
