@@ -93,7 +93,7 @@ export class TicketsController {
         });
 
         const ticketData = {
-          number: ticketNumber + 1,
+          number: ticketNumber + 4000,
           location: location._id,
           clientId: user._id,
           paymentMethod: data.paymentMethod,
