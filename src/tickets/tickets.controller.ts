@@ -107,6 +107,7 @@ export class TicketsController {
         };
 
         const ticket = await this.ticketsService.createTicket(ticketData);
+        await this.sendEmail(assistant.email, ticket._id);
         console.log(
           '🚀 ~ file: tickets.controller.ts ~ line 101 ~ TicketsController ~ createTicket ~ ticket',
           ticket,
@@ -422,5 +423,16 @@ export class TicketsController {
       this.padTo2Digits(date.getMonth() + 1),
       date.getFullYear(),
     ].join('/');
+  }
+
+  async sendEmail(email: string, ticketId: string) {
+    const { data } = await axios.put(
+      `http://localhost:3100/api/tickets/ticket-qr/${ticketId}`,
+      {
+        email,
+      },
+    );
+
+    return data;
   }
 }
