@@ -39,7 +39,7 @@ export class TicketsController {
       const existsTicket = await this.ticketsService.existsTickets(
         data.paymentDetails.clientTransactionId,
       );
-      if (existsTicket) {
+      if (existsTicket.length > 0) {
         return res.json(existsTicket);
       }
 
