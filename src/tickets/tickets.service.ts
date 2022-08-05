@@ -14,11 +14,13 @@ export class TicketsService {
   }
 
   getTicketsByLocation(location: string) {
-    return this.ticketModel.find({
-      location,
-      isActive: true,
-      collectionType: 'RESELLER',
-    });
+    return this.ticketModel
+      .find({
+        location,
+        isActive: true,
+        collectionType: 'RESELLER',
+      })
+      .populate(['assistantId', 'location', 'clientId']);
   }
 
   countTickets() {
