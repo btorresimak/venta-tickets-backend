@@ -39,7 +39,10 @@ export class TicketsController {
       const existsTicket = await this.ticketsService.existsTickets(
         data.paymentDetails.clientTransactionId,
       );
-      if (existsTicket) throw new BadRequestException('El ticket ya existe');
+      if (existsTicket) {
+        return res.json(existsTicket);
+      }
+
       if (data.paymentMethod == 'PAYPHONE') {
         claveAcceso = await this.generateInvoice(
           data.paymentDetails,

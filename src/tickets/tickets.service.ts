@@ -52,7 +52,7 @@ export class TicketsService {
   }
 
   existsTickets(clientTransactionId: string) {
-    return this.ticketModel.findOne({
+    return this.ticketModel.find({
       'paymentDetails.clientTransactionId': clientTransactionId,
     });
   }
