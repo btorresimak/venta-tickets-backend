@@ -34,11 +34,14 @@ export class TicketsController {
   @Post()
   async createTicket(@Res() res: Response, @Body() data: createTicketDTO) {
     try {
-      const claveAcceso = await this.generateInvoice(
-        data.paymentDetails,
-        data.location,
-        data.assistants.length,
-      );
+      let claveAcceso = null;
+      if (data.paymentMethod == 'PAYPHONE') {
+        claveAcceso = await this.generateInvoice(
+          data.paymentDetails,
+          data.location,
+          data.assistants.length,
+        );
+      }
       let user = await this.usersService.getUser({
         identityCard: data.clientIdentityCard,
       });
@@ -95,7 +98,14 @@ export class TicketsController {
         };
 
         const ticket = await this.ticketsService.createTicket(ticketData);
-        ticketsGenerados.push(ticket);
+        console.log(
+          '🚀 ~ file: tickets.controller.ts ~ line 101 ~ TicketsController ~ createTicket ~ ticket',
+          ticket,
+        );
+
+        ticketsGenerados.push(
+          await ticket.populate(['assistantId', 'location']),
+        );
         createdTickets++;
         await this.locationsService.updateAvailable(location._id);
         if (createdTickets === data.assistants.length) {
