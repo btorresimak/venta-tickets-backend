@@ -40,7 +40,7 @@ export class TicketsController {
         data.paymentDetails.clientTransactionId,
       );
       if (existsTicket.length > 0) {
-        return res.json(existsTicket);
+        return res.json({ message: 'Tickets generados', tikets: existsTicket });
       }
 
       if (data.paymentMethod == 'PAYPHONE') {
