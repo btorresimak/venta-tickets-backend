@@ -1,4 +1,6 @@
 import {
+  BadGatewayException,
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -36,6 +38,10 @@ export class TicketsController {
     try {
       let claveAcceso = null;
       if (data.paymentMethod == 'PAYPHONE') {
+        const existsTicket = await this.ticketsService.existsTickets(
+          data.paymentDetails.clientTransactionId,
+        );
+        if (existsTicket) throw new BadRequestException('El ticket ya existe');
         claveAcceso = await this.generateInvoice(
           data.paymentDetails,
           data.location,

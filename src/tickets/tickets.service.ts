@@ -50,4 +50,10 @@ export class TicketsService {
       { new: true },
     );
   }
+
+  existsTickets(clientTransactionId: string) {
+    return this.ticketModel.findOne({
+      'paymentDetails.clientTransactionId': clientTransactionId,
+    });
+  }
 }
