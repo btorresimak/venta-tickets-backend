@@ -151,7 +151,12 @@ export class TicketsController {
     @Param('location') location: string,
   ) {
     try {
-      const tickets = await this.ticketsService.getTicketsByLocation(location);
+      const locationData = await this.locationsService.getLocation({
+        name: location,
+      });
+      const tickets = await this.ticketsService.getTicketsByLocation(
+        locationData._id,
+      );
       return res.json(tickets);
     } catch (error) {
       console.log(error);
@@ -165,13 +170,26 @@ export class TicketsController {
     try {
       // eslint-disable-next-line prefer-const
       let tickets = [];
-      const { locationName, quantity } = data;
+      const { locationName, quantity, name, email, phone, identityCard } = data;
+
       let user = await this.usersService.getUser({
+        identityCard,
+      });
+      let assistant = await this.usersService.getUser({
         identityCard: '0000000000',
       });
 
       if (!user) {
         user = await this.usersService.createUser({
+          identityCard,
+          name,
+          email,
+          phone,
+          profile: 'GUEST',
+        });
+      }
+      if (!assistant) {
+        assistant = await this.usersService.createUser({
           identityCard: '0000000000',
           name: 'Usuario Final',
           email: 'proyectos@imaksmart.com',
@@ -180,12 +198,11 @@ export class TicketsController {
         });
       }
 
+      const location = await this.locationsService.getLocation({
+        name: locationName,
+      });
       for (let i = 1; i <= quantity; i++) {
         const ticketNumber = await this.ticketsService.countTickets();
-
-        const location = await this.locationsService.getLocation({
-          name: locationName,
-        });
 
         const ticketData = {
           number: ticketNumber + 1,
@@ -195,13 +212,13 @@ export class TicketsController {
           paymentDetails: null,
           invoiceDetails: null,
           collectionType: 'RESELLER',
-          assistantId: user._id,
+          assistantId: assistant._id,
           isVerified: true,
           verifiedBy: null,
         };
 
         const ticket = await this.ticketsService.createTicket(ticketData);
-        tickets.push(ticket);
+        tickets.push(await ticket.populate(['assistantId', 'location']));
         console.log('Ticket generado: ', i);
         await this.locationsService.updateAvailable(location._id);
         if (i == quantity) {
