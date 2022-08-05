@@ -427,7 +427,7 @@ export class TicketsController {
 
   async sendEmail(email: string, ticketId: string) {
     const { data } = await axios.put(
-      `http://localhost:3100/api/tickets/ticket-qr/${ticketId}`,
+      `http://143.198.176.190:3100/api/tickets/ticket-qr/${ticketId}`,
       {
         email,
       },
