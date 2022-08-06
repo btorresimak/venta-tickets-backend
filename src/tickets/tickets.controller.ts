@@ -175,9 +175,6 @@ export class TicketsController {
       let user = await this.usersService.getUser({
         identityCard,
       });
-      let assistant = await this.usersService.getUser({
-        identityCard: '0000000000',
-      });
 
       if (!user) {
         user = await this.usersService.createUser({
@@ -188,6 +185,15 @@ export class TicketsController {
           profile: 'GUEST',
         });
       }
+      console.log(
+        '🚀 ~ file: tickets.controller.ts ~ line 178 ~ TicketsController ~ createTicketGeneral ~ user',
+        user,
+      );
+
+      let assistant = await this.usersService.getUser({
+        identityCard: '0000000000',
+      });
+
       if (!assistant) {
         assistant = await this.usersService.createUser({
           identityCard: '0000000000',
