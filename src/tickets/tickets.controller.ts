@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
@@ -22,7 +21,7 @@ import axios from 'axios';
 @ApiTags('Tickets')
 @Controller('tickets')
 export class TicketsController {
-  apiKey = 'doga6aXrhN93Hbkv6XDy';
+  apiKey = 'J4qhi7M843ieQQwqSWp3';
 
   constructor(
     private ticketsService: TicketsService,
@@ -167,6 +166,82 @@ export class TicketsController {
 
   @Post('new')
   async createTicketGeneral(@Res() res: Response, @Body() data: any) {
+    try {
+      // eslint-disable-next-line prefer-const
+      let tickets = [];
+      const { locationName, quantity, name, email, phone, identityCard } = data;
+
+      let user = await this.usersService.getUser({
+        identityCard,
+      });
+
+      if (!user) {
+        user = await this.usersService.createUser({
+          identityCard,
+          name,
+          email,
+          phone,
+          profile: 'GUEST',
+        });
+      }
+      console.log(
+        '🚀 ~ file: tickets.controller.ts ~ line 178 ~ TicketsController ~ createTicketGeneral ~ user',
+        user,
+      );
+
+      let assistant = await this.usersService.getUser({
+        identityCard: '0000000000',
+      });
+
+      if (!assistant) {
+        assistant = await this.usersService.createUser({
+          identityCard: '0000000000',
+          name: 'Usuario Final',
+          email: 'proyectos@imaksmart.com',
+          phone: '9999999999',
+          profile: 'GUEST',
+        });
+      }
+
+      const location = await this.locationsService.getLocation({
+        name: locationName,
+      });
+      for (let i = 1; i <= quantity; i++) {
+        const ticketNumber = await this.ticketsService.countTickets();
+
+        const ticketData = {
+          number: ticketNumber + 1,
+          location: location._id,
+          clientId: user._id,
+          paymentMethod: 'CASH',
+          paymentDetails: null,
+          invoiceDetails: null,
+          collectionType: 'RESELLER',
+          assistantId: assistant._id,
+          isVerified: true,
+          verifiedBy: null,
+        };
+
+        const ticket = await this.ticketsService.createTicket(ticketData);
+        tickets.push(await ticket.populate(['assistantId', 'location']));
+        console.log('Ticket generado: ', i);
+        await this.locationsService.updateAvailable(location._id);
+        if (i == quantity) {
+          return res.json({
+            message: 'Tickets generados',
+            tickets: tickets,
+          });
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      const errorData = getError(error);
+      return res.status(errorData.statusCode).json(errorData);
+    }
+  }
+
+  @Post('cortesias')
+  async createTicketsCortesias(@Res() res: Response, @Body() data: any) {
     try {
       // eslint-disable-next-line prefer-const
       let tickets = [];
@@ -386,7 +461,7 @@ export class TicketsController {
 
   async obtenerSecuencialFactura(ruc: string, codDoc: string) {
     const { data: resp } = await axios.get(
-      `https://api-sbox.veronica.ec/api/v1.0/empresas/${ruc}/secuenciales?codDoc=${codDoc}`,
+      `https://api.veronica.ec/api/v1.0/empresas/${ruc}/secuenciales?codDoc=${codDoc}`,
       {
         headers: {
           'X-API-KEY': `${this.apiKey}`,
@@ -399,7 +474,7 @@ export class TicketsController {
 
   async facturar(datosFactura: any) {
     const { data } = await axios.post(
-      'https://api-sbox.veronica.ec/api/v2.0/comprobantes/facturas',
+      'https://api.veronica.ec/api/v2.0/comprobantes/facturas',
       datosFactura,
       {
         headers: {
@@ -414,7 +489,7 @@ export class TicketsController {
   async enviarAutorizarComprobante(claveAcceso: any) {
     console.log(claveAcceso);
     const { data } = await axios.patch(
-      `https://api-sbox.veronica.ec/api/v1.0/comprobantes/${claveAcceso}/emitir`,
+      `https://api.veronica.ec/api/v1.0/comprobantes/${claveAcceso}/emitir`,
       {},
       {
         headers: {
@@ -426,7 +501,7 @@ export class TicketsController {
 
   async enviarEmailFacturaElectronica(claveAcceso: any) {
     const {} = await axios.post(
-      `https://api-sbox.veronica.ec/api/v1.0/comprobantes/${claveAcceso}/notificar?logo=true`,
+      `https://api.veronica.ec/api/v1.0/comprobantes/${claveAcceso}/notificar?logo=true`,
       {},
       {
         headers: {
