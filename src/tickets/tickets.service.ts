@@ -23,6 +23,13 @@ export class TicketsService {
       .populate(['assistantId', 'location', 'clientId']);
   }
 
+  async getTicketsByNumber(ticketNumber: number, code: string) {
+    const tickets = await this.ticketModel
+      .find({ number: ticketNumber })
+      .populate(['assistantId', 'location']);
+    return tickets.find((ticket) => ticket._id.toString().includes(code));
+  }
+
   countTickets() {
     return this.ticketModel.count();
   }
@@ -34,7 +41,7 @@ export class TicketsService {
   getTicket(ticketId: string) {
     return this.ticketModel
       .findOne({ _id: ticketId })
-      .populate(['clientId', 'assistantId']);
+      .populate(['clientId', 'assistantId', 'location']);
   }
 
   disableTicket(ticketId: string) {

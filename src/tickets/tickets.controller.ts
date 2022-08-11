@@ -377,6 +377,27 @@ export class TicketsController {
     }
   }
 
+  @Get('pruebas/:secuencial/:code')
+  async pruebas(
+    @Res() res: Response,
+    @Param('secuencial') ticketNumber: number,
+    @Param('code') code: string,
+  ) {
+    try {
+      const ticket = await this.ticketsService.getTicketsByNumber(
+        ticketNumber,
+        code,
+      );
+      if (!ticket) throw new NotFoundException('Ticket no existente');
+
+      return res.json(ticket);
+    } catch (error) {
+      console.log(error);
+      const errorData = getError(error);
+      return res.status(errorData.statusCode).json(errorData);
+    }
+  }
+
   async generateInvoice(
     paymentData: any,
     locationType: string,
