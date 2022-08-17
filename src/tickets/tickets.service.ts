@@ -67,4 +67,59 @@ export class TicketsService {
       })
       .populate(['assistantId', 'location']);
   }
+
+  async getSalesReport(user: string, startDate: Date, endDate: Date) {
+    const tickets = await this.ticketModel
+      .find({
+        verifiedBy: user,
+        createdAt: { $gte: startDate, $lte: endDate },
+      })
+      .populate(['location', 'clientId', 'assistantId']);
+    console.log(
+      '🚀 ~ file: tickets.service.ts ~ line 78 ~ TicketsService ~ getSalesReport ~ tickets',
+      tickets,
+    );
+
+    // const locations = ['GENERRAL', 'VIP', 'GOLDEN'];
+
+    const generalTickets = tickets.filter(
+      (ticket) => ticket.location['name'] == 'GENERAL',
+    );
+
+    console.log(generalTickets);
+
+    const vipTickets = tickets.filter(
+      (ticket) => ticket.location['name'] == 'VIP',
+    );
+
+    const goldenTickets = tickets.filter(
+      (ticket) => ticket.location['name'] == 'GOLDEN',
+    );
+
+    const salesGeneral = generalTickets.length * 15;
+    const salesGolden = goldenTickets.length * 20;
+    const salesVip = vipTickets.length * 25;
+
+    const clients = tickets.map((ticket) => ({
+      name: ticket.clientId['name'],
+      identityCard: ticket.clientId['identityCard'],
+    }));
+    const assistants = tickets.map((ticket) => ({
+      name: ticket.assistantId['name'],
+      identityCard: ticket.assistantId['identityCard'],
+    }));
+
+    return {
+      clients,
+      assistants,
+      generalCount: generalTickets.length,
+      vipCount: vipTickets.length,
+      goldenCount: goldenTickets.length,
+      salesGeneral,
+      salesVip,
+      salesGolden,
+      totalCount: tickets.length,
+      totalSales: salesGeneral + salesVip + salesGolden,
+    };
+  }
 }

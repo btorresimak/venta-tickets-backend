@@ -12,6 +12,8 @@ export class Location {
   @ApiProperty()
   available: number;
   @ApiProperty()
+  price: number;
+  @ApiProperty()
   createdAt: Date;
   @ApiProperty()
   updatedAt: Date;

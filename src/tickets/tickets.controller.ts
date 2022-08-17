@@ -18,6 +18,7 @@ import { assignAssistantDTO } from './dto';
 import { LocationsService } from '../locations/locations.service';
 import { entradas } from './interfaces/data.interface';
 import axios from 'axios';
+import { endOfDay, startOfDay } from 'date-fns';
 @ApiTags('Tickets')
 @Controller('tickets')
 export class TicketsController {
@@ -102,7 +103,7 @@ export class TicketsController {
           collectionType: data.collectionType,
           assistantId: assistant._id,
           isVerified: data.isVerified,
-          verifverifiedBy: data.verifiedBy || null,
+          verifiedBy: data.verifiedBy || null,
         };
 
         const ticket = await this.ticketsService.createTicket(ticketData);
@@ -124,6 +125,29 @@ export class TicketsController {
           });
         }
       }
+    } catch (error) {
+      console.log(error);
+      const errorData = getError(error);
+      return res.status(errorData.statusCode).json(errorData);
+    }
+  }
+
+  @Post('reporte')
+  async getReporte(
+    @Res() res: Response,
+    @Body('email') email: string,
+    @Body('fechaInicio') fechaInicio: string,
+    @Body('fechaFin') fechaFin: string,
+  ) {
+    try {
+      const fechaInicioReporte = startOfDay(new Date(fechaInicio));
+      const fechaFinReporte = endOfDay(new Date(fechaFin));
+      const tickets = await this.ticketsService.getSalesReport(
+        email,
+        fechaInicioReporte,
+        fechaFinReporte,
+      );
+      return res.json(tickets);
     } catch (error) {
       console.log(error);
       const errorData = getError(error);

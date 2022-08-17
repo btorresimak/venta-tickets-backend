@@ -13,7 +13,7 @@ export const ticketSchema = new Schema(
     issuedDate: { type: Date, required: true, default: Date.now },
     assistantId: { type: Schema.Types.ObjectId, ref: 'users' },
     isVerified: { type: Boolean, default: false },
-    verifiedBy: { type: Schema.Types.ObjectId, ref: 'users' },
+    verifiedBy: { type: String },
   },
   {
     timestamps: true,
