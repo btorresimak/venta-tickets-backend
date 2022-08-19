@@ -30,6 +30,10 @@ export class TicketsService {
     return tickets.find((ticket) => ticket._id.toString().includes(code));
   }
 
+  async getTicketByNumber(number: number) {
+    return this.ticketModel.findOne({ number });
+  }
+
   countTickets() {
     return this.ticketModel.count();
   }
@@ -55,6 +59,22 @@ export class TicketsService {
   updateAssistant(ticketId: string, assistantId: string) {
     return this.ticketModel.findOneAndUpdate(
       { _id: ticketId, isActive: true },
+      { assistantId },
+      { new: true },
+    );
+  }
+
+  async updateAssistantByNumber(numberTicket: string, assistantId: string) {
+    const ticket = await this.ticketModel
+      .findOne({ number: numberTicket, isActive: true })
+      .populate(['assistantId']);
+    if (ticket && ticket.assistantId['identityCard'] === '0000000000') {
+    }
+
+    return null;
+
+    return this.ticketModel.findOneAndUpdate(
+      { number: numberTicket, isActive: true },
       { assistantId },
       { new: true },
     );

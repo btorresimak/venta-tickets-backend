@@ -401,6 +401,46 @@ export class TicketsController {
     }
   }
 
+  @Put('assistant/ticket/:number')
+  async assignAssistantToTicket(
+    @Res() res: Response,
+    @Param('number') ticketNumber: string,
+    @Body() data: assignAssistantDTO,
+  ) {
+    try {
+      const existTicket = await this.ticketsService.getTicketByNumber(
+        +ticketNumber,
+      );
+
+      if (!existTicket) throw new NotFoundException('Ticket no existente');
+
+      let existsAssistant = await this.usersService.getUser({
+        identityCard: data.assistantIdentityCard,
+      });
+
+      if (!existsAssistant) {
+        existsAssistant = await this.usersService.createUser({
+          identityCard: data.assistantIdentityCard,
+          name: data.assistantName,
+          email: data.assistantEmail,
+          phone: data.assistantPhone,
+          profile: 'GUEST',
+        });
+      }
+
+      const ticket = await this.ticketsService.updateAssistant(
+        existTicket._id,
+        existsAssistant._id,
+      );
+
+      return res.json({ message: 'Ticket registrado', ticket });
+    } catch (error) {
+      console.log(error);
+      const errorData = getError(error);
+      return res.status(errorData.statusCode).json(errorData);
+    }
+  }
+
   @Get('pruebas/:secuencial/:code')
   async pruebas(
     @Res() res: Response,
