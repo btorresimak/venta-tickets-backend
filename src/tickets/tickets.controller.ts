@@ -168,6 +168,22 @@ export class TicketsController {
     }
   }
 
+  @Get('number/:number')
+  async getTicketByNumber(
+    @Res() res: Response,
+    @Param('number') number: number,
+  ) {
+    try {
+      const ticket = await this.ticketsService.getTicketByNumber(number);
+      if (!ticket) throw new NotFoundException('Ticket no existente');
+      return res.json(ticket);
+    } catch (error) {
+      console.log(error);
+      const errorData = getError(error);
+      return res.status(errorData.statusCode).json(errorData);
+    }
+  }
+
   @Get('location/:location')
   async getTicketsByLocation(
     @Res() res: Response,
@@ -348,7 +364,30 @@ export class TicketsController {
       const ticket = await this.ticketsService.disableTicket(ticketId);
       if (!ticket) {
         return res.json({
-          message: 'Ticket ya ha sido registrado registrado anteriormente',
+          message: 'Ticket ya ha sido registrado anteriormente',
+          ticket: existTicket,
+        });
+      }
+      return res.json({ message: 'Ticket registrado', ticket });
+    } catch (error) {
+      console.log(error);
+      const errorData = getError(error);
+      return res.status(errorData.statusCode).json(errorData);
+    }
+  }
+
+  @Put('register/ticket/:number')
+  async registerTicketByNumber(
+    @Res() res: Response,
+    @Param('number') number: number,
+  ) {
+    try {
+      const existTicket = await this.ticketsService.getTicketByNumber(number);
+      if (!existTicket) throw new NotFoundException('Ticket no existente');
+      const ticket = await this.ticketsService.disableTicket(existTicket._id);
+      if (!ticket) {
+        return res.json({
+          message: 'Ticket ya ha sido registrado anteriormente',
           ticket: existTicket,
         });
       }
