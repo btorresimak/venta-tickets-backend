@@ -18,7 +18,7 @@ import { assignAssistantDTO } from './dto';
 import { LocationsService } from '../locations/locations.service';
 import { entradas } from './interfaces/data.interface';
 import axios from 'axios';
-import { endOfDay, startOfDay } from 'date-fns';
+import { addDays, endOfDay, startOfDay } from 'date-fns';
 @ApiTags('Tickets')
 @Controller('tickets')
 export class TicketsController {
@@ -148,6 +148,57 @@ export class TicketsController {
         fechaFinReporte,
       );
       return res.json(tickets);
+    } catch (error) {
+      console.log(error);
+      const errorData = getError(error);
+      return res.status(errorData.statusCode).json(errorData);
+    }
+  }
+
+  @Post('reporte/entradas')
+  async getReporteEntradas(@Res() res: Response, @Body() data: any) {
+    try {
+      const { date } = data;
+      const startDate = startOfDay(new Date(date));
+      const endDate = addDays(startDate, 2);
+      const dataReporte = await this.ticketsService.getReportOfSales(
+        startDate,
+        endDate,
+      );
+      res.json(dataReporte);
+    } catch (error) {
+      console.log(error);
+      const errorData = getError(error);
+      return res.status(errorData.statusCode).json(errorData);
+    }
+  }
+
+  @Post('reporte/entradas/usuario')
+  async getReporteEntradasUsuario(@Res() res: Response, @Body() data: any) {
+    try {
+      const { date, user } = data;
+      const startDate = startOfDay(new Date(date));
+      const endDate = addDays(startDate, 2);
+      const dataReporte = await this.ticketsService.getReportOfSalesByUser(
+        startDate,
+        endDate,
+        user,
+      );
+      res.json(dataReporte);
+    } catch (error) {
+      console.log(error);
+      const errorData = getError(error);
+      return res.status(errorData.statusCode).json(errorData);
+    }
+  }
+
+  @Post('reporte/entradas/completo')
+  async getReporteEntradasCompleto(@Res() res: Response, @Body() data: any) {
+    try {
+      // const { user } = data;
+
+      const dataReporte = await this.ticketsService.getReportOfSalesFull();
+      res.json(dataReporte);
     } catch (error) {
       console.log(error);
       const errorData = getError(error);

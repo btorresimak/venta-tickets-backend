@@ -13,6 +13,125 @@ export class TicketsService {
     return this.ticketModel.find({ isActive: true });
   }
 
+  async getReportOfSales(startDate: Date, endDate: Date) {
+    const sales = await this.ticketModel
+      .find({
+        verifiedBy: { $ne: null },
+        createdAt: { $gte: startDate, $lte: endDate },
+      })
+      .populate(['location', 'clientId', 'assistantId']);
+
+    const verifiedBy = sales.map((sale) => sale['verifiedBy']);
+
+    const unique = verifiedBy.filter(this.onlyUnique);
+
+    const salesByUser = unique.map((user) => {
+      const salesUser = sales.filter((sale) => sale['verifiedBy'] == user);
+      const salesGeneral = salesUser.filter(
+        (sale) => sale['location']['name'] == 'GENERAL',
+      );
+      const salesVip = salesUser.filter(
+        (sale) => sale['location']['name'] == 'VIP',
+      );
+
+      const salesGolden = salesUser.filter(
+        (sale) => sale['location']['name'] == 'GOLDEN',
+      );
+
+      return {
+        user,
+        salesGeneral: salesGeneral.length,
+        salesVip: salesVip.length,
+        salesGolden: salesGolden.length,
+        amountGeneral: salesGeneral.length * 15,
+        amountVip: salesVip.length * 20,
+        amountGolden: salesGolden.length * 25,
+      };
+    });
+
+    return salesByUser;
+  }
+  async getReportOfSalesByUser(startDate: Date, endDate: Date, user: string) {
+    const sales = await this.ticketModel
+      .find({
+        verifiedBy: user,
+        createdAt: { $gte: startDate, $lte: endDate },
+      })
+      .populate(['location', 'clientId', 'assistantId']);
+
+    const verifiedBy = sales.map((sale) => sale['verifiedBy']);
+
+    const unique = verifiedBy.filter(this.onlyUnique);
+
+    const salesByUser = unique.map((user) => {
+      const salesUser = sales.filter((sale) => sale['verifiedBy'] == user);
+      const salesGeneral = salesUser.filter(
+        (sale) => sale['location']['name'] == 'GENERAL',
+      );
+      const salesVip = salesUser.filter(
+        (sale) => sale['location']['name'] == 'VIP',
+      );
+
+      const salesGolden = salesUser.filter(
+        (sale) => sale['location']['name'] == 'GOLDEN',
+      );
+
+      return {
+        user,
+        salesGeneral: salesGeneral.length,
+        salesVip: salesVip.length,
+        salesGolden: salesGolden.length,
+        amountGeneral: salesGeneral.length * 15,
+        amountVip: salesVip.length * 20,
+        amountGolden: salesGolden.length * 25,
+      };
+    });
+
+    return salesByUser[0];
+  }
+
+  async getReportOfSalesFull() {
+    const sales = await this.ticketModel
+      .find({
+        verifiedBy: { $ne: null },
+      })
+      .populate(['location', 'clientId', 'assistantId']);
+
+    const verifiedBy = sales.map((sale) => sale['verifiedBy']);
+
+    const unique = verifiedBy.filter(this.onlyUnique);
+
+    const salesByUser = unique.map((user) => {
+      const salesUser = sales.filter((sale) => sale['verifiedBy'] == user);
+      const salesGeneral = salesUser.filter(
+        (sale) => sale['location']['name'] == 'GENERAL',
+      );
+      const salesVip = salesUser.filter(
+        (sale) => sale['location']['name'] == 'VIP',
+      );
+
+      const salesGolden = salesUser.filter(
+        (sale) => sale['location']['name'] == 'GOLDEN',
+      );
+
+      return {
+        user,
+        salesGeneral: salesGeneral.length,
+        salesVip: salesVip.length,
+        salesGolden: salesGolden.length,
+        amountGeneral: salesGeneral.length * 15,
+        amountVip: salesVip.length * 20,
+        amountGolden: salesGolden.length * 25,
+      };
+    });
+
+    return salesByUser;
+  }
+
+  onlyUnique(value, index, self) {
+    return self.indexOf(value) === index;
+  }
+
   getTicketsByLocation(location: string) {
     return this.ticketModel
       .find({
