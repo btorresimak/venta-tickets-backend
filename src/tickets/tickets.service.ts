@@ -40,6 +40,7 @@ export class TicketsService {
 
       return {
         user,
+        sales,
         salesGeneral: salesGeneral.length,
         salesVip: salesVip.length,
         salesGolden: salesGolden.length,
@@ -84,6 +85,7 @@ export class TicketsService {
         amountGeneral: salesGeneral.length * 15,
         amountVip: salesVip.length * 20,
         amountGolden: salesGolden.length * 25,
+        sales: salesUser,
       };
     });
 
@@ -101,7 +103,7 @@ export class TicketsService {
 
     const unique = verifiedBy.filter(this.onlyUnique);
 
-    const salesByUser = unique.map((user) => {
+    let salesByUser = unique.map((user) => {
       const salesUser = sales.filter((sale) => sale['verifiedBy'] == user);
       const salesGeneral = salesUser.filter(
         (sale) => sale['location']['name'] == 'GENERAL',
@@ -125,6 +127,10 @@ export class TicketsService {
       };
     });
 
+    salesByUser = salesByUser.map((sale) => {
+      const salesUser = sales.filter((s) => s['verifiedBy'] == sale.user);
+      return { ...sale, sales: salesUser };
+    });
     return salesByUser;
   }
 
