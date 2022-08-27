@@ -26,6 +26,6 @@ export class VentasService {
   }
 
   getTickets() {
-    return this.ventaModel.find({ isActive: true });
+    return this.ventaModel.find({ isActive: true }).populate(['location', 'clientId', 'assistantId']);
   }
 }
