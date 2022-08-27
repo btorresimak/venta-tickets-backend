@@ -531,6 +531,18 @@ export class TicketsController {
     }
   }
 
+  @Put('ticket/numbers/new')
+  async updateTicketNumbers(@Res() res: Response) {
+    try {
+      const tickets = await this.ticketsService.updateTicketNumbers();
+      return res.json({ message: 'Tickets actualizados', tickets });
+    } catch (error) {
+      console.log(error);
+      const errorData = getError(error);
+      return res.status(errorData.statusCode).json(errorData);
+    }
+  }
+
   @Get('pruebas/:secuencial/:code')
   async pruebas(
     @Res() res: Response,

@@ -45,8 +45,8 @@ export class TicketsService {
         salesVip: salesVip.length,
         salesGolden: salesGolden.length,
         amountGeneral: salesGeneral.length * 15,
-        amountVip: salesVip.length * 20,
-        amountGolden: salesGolden.length * 25,
+        amountVip: salesVip.length * 25,
+        amountGolden: salesGolden.length * 20,
       };
     });
 
@@ -83,8 +83,8 @@ export class TicketsService {
         salesVip: salesVip.length,
         salesGolden: salesGolden.length,
         amountGeneral: salesGeneral.length * 15,
-        amountVip: salesVip.length * 20,
-        amountGolden: salesGolden.length * 25,
+        amountVip: salesVip.length * 25,
+        amountGolden: salesGolden.length * 20,
         sales: salesUser,
       };
     });
@@ -122,8 +122,8 @@ export class TicketsService {
         salesVip: salesVip.length,
         salesGolden: salesGolden.length,
         amountGeneral: salesGeneral.length * 15,
-        amountVip: salesVip.length * 20,
-        amountGolden: salesGolden.length * 25,
+        amountVip: salesVip.length * 25,
+        amountGolden: salesGolden.length * 20,
       };
     });
 
@@ -266,5 +266,15 @@ export class TicketsService {
       totalCount: tickets.length,
       totalSales: salesGeneral + salesVip + salesGolden,
     };
+  }
+
+  async updateTicketNumbers() {
+    const tickets = await this.ticketModel.find({ number: { $gte: 7000 } });
+    tickets.forEach(async (ticket) => {
+      ticket.number = ticket.number + 3000;
+      await ticket.save();
+    });
+
+    return tickets;
   }
 }
