@@ -9,6 +9,7 @@ import { UsersModule } from './users/users.module';
 import { TicketsModule } from './tickets/tickets.module';
 import { AuthModule } from './auth/auth.module';
 import { LocationsModule } from './locations/locations.module';
+import { VentasModule } from './ventas/ventas.module';
 
 @Module({
   imports: [
@@ -42,6 +43,8 @@ import { LocationsModule } from './locations/locations.module';
     AuthModule,
 
     LocationsModule,
+
+    VentasModule,
   ],
   controllers: [AppController],
   providers: [AppService],
