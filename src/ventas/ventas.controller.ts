@@ -69,7 +69,7 @@ export class VentasController {
         });
 
         const ticketData = {
-          number: ticketNumber + 4000,
+          number: ticketNumber,
           location: location._id,
           clientId: user._id,
           paymentMethod: data.paymentMethod,
